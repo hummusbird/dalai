@@ -242,25 +242,27 @@ class Dalai {
     if (req.repeat_penalty) o.repeat_penalty = req.repeat_penalty
     if (typeof req.interactive !== "undefined") o.interactive = req.interactive
 
-    let args = []
+    let chunks = []
     for (let key in o) {
-      args.push(`--${key}`, o[key].toString())
+      chunks.push(`--${key} ${escapeDoubleQuotes(platform, o[key].toString())}`)
     }
+    const escaped = escapeNewLine(platform, req.prompt)
+    const prompt = `"${escapeDoubleQuotes(platform, escaped)}"`
 
-    args.push("-p", req.prompt)
+    chunks.push(`-p ${prompt}`)
 
     const main_bin_path = platform === "win32" ? path.resolve(this.home, Core, "build", "Release", "main") : path.resolve(this.home, Core, "main")
     this.sessionBuffer = "";
     this.bufferStarted = false;
     if (req.full) {
-      await this.exec(main_bin_path, args, this.cores[Core].home, cb)
+      await this.exec(`${main_bin_path} ${chunks.join(" ")}`, this.cores[Core].home, cb)
     } else {
       const startpattern = /.*sampling parameters:.*/g
       const endpattern = /.*mem per token.*/g
       let started = req.debug
       let ended = false
       let writeEnd = !req.skip_end
-      await this.exec(main_bin_path, args, this.cores[Core].home, (proc, msg) => {
+      await this.exec(`${main_bin_path} ${chunks.join(" ")}`, this.cores[Core].home, (proc, msg) => {
         if (endpattern.test(msg)) ended = true
         if (started && !ended) {
           this.buffer(req, msg, cb)
@@ -444,19 +446,19 @@ class Dalai {
     // 3.2. Build tools
     if (platform === "linux") {
       // ubuntu debian
-      success = await this.exec("apt-get", ["install", "build-essential", "python3-venv", "-y"])
+      success = await this.exec("apt-get install build-essential python3-venv -y")
       if (!success) {
         // fefdora
-        success = await this.exec("dnf", ["install", "make", "automake", "gcc", "gcc-c++", "kernel-devel", "python3-virtualenv", "-y"])
+        success = await this.exec("dnf install make automake gcc gcc-c++ kernel-devel python3-virtualenv -y")
       }
     } else {
       // for win32 / darwin
       for (let root_pip_path of root_pip_paths) {
-        success = await this.exec(root_pip_path, ["install", "--user", "virtualenv"])
+        success = await this.exec(`${root_pip_path} install --user virtualenv`)
         if (success) {
           break;
         }
-        success = await this.exec(root_pip_path, ["install", "virtualenv"])
+        success = await this.exec(`${root_pip_path} install virtualenv`)
         if (success) {
           break;
         }
@@ -471,7 +473,7 @@ class Dalai {
     const venv_path = path.join(this.home, "venv")
     for (let root_python_path of root_python_paths) {
       console.log("trying with", root_python_path)
-      let code = await this.exec(root_python_path, ["-m", "venv", venv_path])
+      let code = await this.exec(`${root_python_path} -m venv ${venv_path}`)
       console.log({ code })
     }
     /*
@@ -486,24 +488,24 @@ class Dalai {
     const python_path = platform == "win32" ? path.join(venv_path, "Scripts", "python.exe") : path.join(venv_path, 'bin', 'python')
     // cmake (only on windows. the rest platforms use make)
     if (platform === "win32") {
-      success = await this.exec(pip_path, ["install", "cmake"])
+      success = await this.exec(`${pip_path} install cmake`)
       if (!success) {
         throw new Error("cmake installation failed")
         return
       }
     }
-    success = await this.exec(pip_path, ["install", "--upgrade", "pip", "setuptools", "wheel"])
+    success = await this.exec(`${pip_path} install --upgrade pip setuptools wheel`)
     if (!success) {
-      success = await this.exec(pip_path, ["install", "--user", "--upgrade", "pip", "setuptools", "wheel"])
+      success = await this.exec(`${pip_path} install --user --upgrade pip setuptools wheel`)
       if (!success) {
         throw new Error("pip setuptools wheel upgrade failed")
         return
       }
     }
-    success = await this.exec(pip_path, ["install", "torch", "torchvision", "torchaudio", "sentencepiece", "numpy"])
-    //success = await this.exec(pip_path, ["install", "torch", "torchvision", "torchaudio", "sentencepiece", "numpy", "wget"])
+    success = await this.exec(`${pip_path} install torch torchvision torchaudio sentencepiece numpy`)
+    //success = await this.exec(`${pip_path} install torch torchvision torchaudio sentencepiece numpy wget`)
     if (!success) {
-      success = await this.exec(pip_path, ["install", "--user", "torch", "torchvision", "torchaudio", "sentencepiece", "numpy"])
+      success = await this.exec(`${pip_path} install --user torch torchvision torchaudio sentencepiece numpy`)
       if (!success) {
         throw new Error("dependency installation failed")
         return
