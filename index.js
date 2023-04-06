@@ -35,6 +35,8 @@ const stripAnsi = (str) => {
 const winEscape = (str) => {
   return str
     .replaceAll(/\\n/g, "\n")
+    .replaceAll("`", "\`")
+    .replaceAll("$", "\$")
     .replaceAll(/\\r/g, "\r")
     .replaceAll(/\\t/g, "\t")
     .replaceAll(/\\b/g, "\b")
