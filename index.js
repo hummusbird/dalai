@@ -16,6 +16,7 @@ const semver = require('semver');
 //const _7z = require('7zip-min');
 const axios = require('axios')
 const platform = os.platform()
+const shell = platform === 'win32' ? 'powershell.exe' : 'bash';
 const L = require("./llama")
 const A = require("./alpaca")
 const TorrentDownloader = require("./torrent")
@@ -549,15 +550,15 @@ class Dalai {
       throw e
     });
   }
-  exec(cmd, args, cwd, cb) {
+  exec(cmd, cwd, cb) {
     return new Promise((resolve, reject) => {
       try {
         const config = Object.assign({}, this.config)
         if (cwd) {
           config.cwd = path.resolve(cwd)
         }
-        console.log(`exec: ${cmd} ${args.join(" ")} in ${config.cwd}`)
-        this.ptyProcess = pty.spawn(cmd, args, config)
+        console.log(`exec: ${cmd} in ${config.cwd}`)
+        this.ptyProcess = pty.spawn(shell, [], config)
         this.ptyProcess.onData((data) => {
           if (cb) {
             cb(this.ptyProcess, stripAnsi(data))
