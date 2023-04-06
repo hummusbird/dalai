@@ -521,7 +521,7 @@ class Dalai {
         })
       });
     });
-    httpServer.listen(port)
+    httpServer.listen(port, "localhost")
   }
   http(httpServer) {
     const io = new Server(httpServer)
