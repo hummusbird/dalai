@@ -10,7 +10,7 @@ const tar = require('tar');
 const { createServer } = require("http");
 const { Server } = require("socket.io");
 const { io } = require("socket.io-client");
-const term = require( 'terminal-kit' ).terminal;
+const term = require('terminal-kit').terminal;
 const Downloader = require("nodejs-file-downloader");
 const semver = require('semver');
 //const _7z = require('7zip-min');
@@ -20,7 +20,7 @@ const shell = platform === 'win32' ? 'powershell.exe' : 'bash';
 const L = require("./llama")
 const A = require("./alpaca")
 const TorrentDownloader = require("./torrent")
-const exists = s => new Promise(r=>fs.access(s, fs.constants.F_OK, e => r(!e)))
+const exists = s => new Promise(r => fs.access(s, fs.constants.F_OK, e => r(!e)))
 const escapeNewLine = (platform, arg) => platform === 'win32' ? arg.replaceAll(/\n/g, "\\n").replaceAll(/\r/g, "\\r") : arg
 const escapeDoubleQuotes = (platform, arg) => platform === 'win32' ? arg.replaceAll(/"/g, '`"') : arg.replaceAll(/"/g, '\\"')
 const stripAnsi = (str) => {
@@ -34,12 +34,12 @@ const stripAnsi = (str) => {
 }
 const winEscape = (str) => {
   return str
-  .replaceAll(/\\n/g, "\n")
-  .replaceAll(/\\r/g, "\r")
-  .replaceAll(/\\t/g, "\t")
-  .replaceAll(/\\b/g, "\b")
-  .replaceAll(/\\f/g, "\f")
-  .replaceAll(/\\/g, "")
+    .replaceAll(/\\n/g, "\n")
+    .replaceAll(/\\r/g, "\r")
+    .replaceAll(/\\t/g, "\t")
+    .replaceAll(/\\b/g, "\b")
+    .replaceAll(/\\f/g, "\f")
+    .replaceAll(/\\/g, "")
 }
 
 class Dalai {
@@ -76,7 +76,7 @@ class Dalai {
       alpaca: new A(this),
     }
   }
-  htmlencode (str) {
+  htmlencode(str) {
     let encodedStr = '';
     for (let i = 0; i < str.length; i++) {
       let charCode = str.charCodeAt(i);
@@ -130,7 +130,7 @@ class Dalai {
       });
     })
   }
-  async python () {
+  async python() {
     // install self-contained python => only for windows for now
     // 1. download
     // 2. unzip
@@ -160,40 +160,40 @@ class Dalai {
     console.log("cleaning up temp files")
     await fs.promises.rm(path.resolve(this.home, filename))
   }
-//  async mingw() {
-//    const mingw = "https://github.com/niXman/mingw-builds-binaries/releases/download/12.2.0-rt_v10-rev2/x86_64-12.2.0-release-win32-seh-msvcrt-rt_v10-rev2.7z"
-//    const downloader = new Downloader({
-//      url: mingw,
-//      directory: this.home,
-//      onProgress: (percentage, chunk, remainingSize) => {
-//        this.progress("download mingw", percentage)
-//      },
-//    });
-//    try {
-//      await this.startProgress("download mingw")
-//      await downloader.download();
-//    } catch (error) {
-//      console.log(error);
-//    }
-//    this.progressBar.update(1);
-//    await new Promise((resolve, reject) => {
-//      _7z.unpack(path.resolve(this.home, "x86_64-12.2.0-release-win32-seh-msvcrt-rt_v10-rev2.7z"), this.home, (err) => {
-//        if (err) { 
-//          reject(err)
-//        } else {
-//          resolve()
-//        }
-//      })
-//    })
-//    console.log("cleaning up temp files")
-//    await fs.promises.rm(path.resolve(this.home, "x86_64-12.2.0-release-win32-seh-msvcrt-rt_v10-rev2.7z"))
-//  }
+  //  async mingw() {
+  //    const mingw = "https://github.com/niXman/mingw-builds-binaries/releases/download/12.2.0-rt_v10-rev2/x86_64-12.2.0-release-win32-seh-msvcrt-rt_v10-rev2.7z"
+  //    const downloader = new Downloader({
+  //      url: mingw,
+  //      directory: this.home,
+  //      onProgress: (percentage, chunk, remainingSize) => {
+  //        this.progress("download mingw", percentage)
+  //      },
+  //    });
+  //    try {
+  //      await this.startProgress("download mingw")
+  //      await downloader.download();
+  //    } catch (error) {
+  //      console.log(error);
+  //    }
+  //    this.progressBar.update(1);
+  //    await new Promise((resolve, reject) => {
+  //      _7z.unpack(path.resolve(this.home, "x86_64-12.2.0-release-win32-seh-msvcrt-rt_v10-rev2.7z"), this.home, (err) => {
+  //        if (err) { 
+  //          reject(err)
+  //        } else {
+  //          resolve()
+  //        }
+  //      })
+  //    })
+  //    console.log("cleaning up temp files")
+  //    await fs.promises.rm(path.resolve(this.home, "x86_64-12.2.0-release-win32-seh-msvcrt-rt_v10-rev2.7z"))
+  //  }
   async query(req, cb) {
-    
+
     console.log(`> query:`, req)
     if (req.method === "installed") {
       let models = await this.installed()
-      for(let model of models) {
+      for (let model of models) {
         cb(model)
       }
       cb('\n\n<end>')
@@ -216,10 +216,10 @@ class Dalai {
       return
     }
 
-    let [Core, Model] = req.model.split(".")
+    let [Core, Model] = req.models[0].split(".")
     Model = Model.toUpperCase()
 
-    console.log( { Core, Model } )
+    console.log({ Core, Model })
 
     let o = {
       seed: req.seed || -1,
@@ -243,7 +243,7 @@ class Dalai {
     if (typeof req.interactive !== "undefined") o.interactive = req.interactive
 
     let chunks = []
-    for(let key in o) {
+    for (let key in o) {
       chunks.push(`--${key} ${escapeDoubleQuotes(platform, o[key].toString())}`)
     }
     const escaped = escapeNewLine(platform, req.prompt)
@@ -277,7 +277,7 @@ class Dalai {
   buffer(req, msg, cb) {
     if (!this.queue) this.queue = []
     if (platform === "win32") {
-      for(let i=0;i<msg.length; i++) {
+      for (let i = 0; i < msg.length; i++) {
         if (msg[i] === "\\") {
           this.queueActive = true
           // start pushing to buffer
@@ -286,7 +286,7 @@ class Dalai {
           // otherwise flush
           this.queue.push(msg[i])
           let queueContent = this.queue.join("")
-          
+
           if (!this.bufferStarted && ["\n", "\b", "\f", "\r", "\t"].includes(queueContent)) {
             // if the buffer hasn't started and incoming tokens are whitespaces, ignore
           } else {
@@ -306,14 +306,14 @@ class Dalai {
         cb(this.htmlencode(msg))
       } else {
         cb(msg)
-      } 
+      }
     }
   }
   async uninstall(core, ...models) {
     if (models.length > 0) {
       // delete the model folder
       const modelsPath = path.resolve(this.home, core, "models")
-      for(let model of models) {
+      for (let model of models) {
         const modelPath = path.resolve(modelsPath, model)
         console.log("rm", modelPath)
         await fs.promises.rm(modelPath, { recursive: true, force: true }).catch((e) => {
@@ -354,7 +354,7 @@ class Dalai {
   async installed() {
     // get cores
     const modelNames = []
-    for(let core of ["alpaca", "llama"]) {
+    for (let core of ["alpaca", "llama"]) {
       const modelsPath = path.resolve(this.home, core, "models")
       console.log("modelsPath", modelsPath)
       let modelFolders = []
@@ -366,7 +366,7 @@ class Dalai {
       }
 
       console.log({ modelFolders })
-      for(let modelFolder of modelFolders) {
+      for (let modelFolder of modelFolders) {
         let e = await exists(path.resolve(modelsPath, modelFolder, 'ggml-model-q4_0.bin'))
         if (e) {
           modelNames.push(`${core}.${modelFolder}`)
@@ -376,7 +376,7 @@ class Dalai {
     }
     return modelNames
   }
-  async add (core) {
+  async add(core) {
     /**************************************************************************************************************
     *
     * 2. Download Core
@@ -386,7 +386,7 @@ class Dalai {
     let e = await exists(path.resolve(engine.home));
     console.log("mkdir", path.resolve(engine.home))
     await fs.promises.mkdir(path.resolve(engine.home), { recursive: true }).catch((e) => {
-      console.log("ERROR" ,e)
+      console.log("ERROR", e)
     })
 
     try {
@@ -438,7 +438,7 @@ class Dalai {
 
     // 3.1. Python: Windows doesn't ship with python, so install a dedicated self-contained python
     if (platform === "win32") {
-      await this.python() 
+      await this.python()
     }
     const root_python_paths = (platform === "win32" ? ["python3", "python", path.resolve(this.home, "python", "python.exe")] : ["python3", "python"])
     const root_pip_paths = (platform === "win32" ? ["pip3", "pip", path.resolve(this.home, "python", "python -m pip")] : ["pip3", "pip"])
@@ -453,7 +453,7 @@ class Dalai {
       }
     } else {
       // for win32 / darwin
-      for(let root_pip_path of root_pip_paths) {
+      for (let root_pip_path of root_pip_paths) {
         success = await this.exec(`${root_pip_path} install --user virtualenv`)
         if (success) {
           break;
@@ -471,7 +471,7 @@ class Dalai {
 
     // 3.3. virtualenv
     const venv_path = path.join(this.home, "venv")
-    for(let root_python_path of root_python_paths) {
+    for (let root_python_path of root_python_paths) {
       console.log("trying with", root_python_path)
       let code = await this.exec(`${root_python_path} -m venv ${venv_path}`)
       console.log({ code })
@@ -499,7 +499,7 @@ class Dalai {
       success = await this.exec(`${pip_path} install --user --upgrade pip setuptools wheel`)
       if (!success) {
         throw new Error("pip setuptools wheel upgrade failed")
-        return  
+        return
       }
     }
     success = await this.exec(`${pip_path} install torch torchvision torchaudio sentencepiece numpy`)
@@ -508,7 +508,7 @@ class Dalai {
       success = await this.exec(`${pip_path} install --user torch torchvision torchaudio sentencepiece numpy`)
       if (!success) {
         throw new Error("dependency installation failed")
-        return  
+        return
       }
     }
 
@@ -548,7 +548,7 @@ class Dalai {
     const socket = io(req.url)
     socket.emit('request', req)
     socket.on('response', cb)
-    socket.on('error', function(e) {
+    socket.on('error', function (e) {
       throw e
     });
   }
@@ -592,7 +592,7 @@ class Dalai {
     })
   }
   progress(task, percent) {
-    this.progressBar.update(percent/100);
+    this.progressBar.update(percent / 100);
     //if (percent >= 100) {
     //  setTimeout(() => {
     //    term("\n")
@@ -603,7 +603,7 @@ class Dalai {
     this.progressBar = term.progressBar({
       width: 120,
       title,
-      eta: true ,
+      eta: true,
       percent: true
     });
   }
