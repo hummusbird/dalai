@@ -67,7 +67,7 @@ const start = (port, home) => {
 
 
 
-    httpServer.listen(port, () => {
+    httpServer.listen(port, "localhost", () => {
         console.log(`Server running on http://localhost:${port}/`)
     })
 }
