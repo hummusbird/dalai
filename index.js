@@ -21,6 +21,8 @@ const L = require("./llama")
 const A = require("./alpaca")
 const TorrentDownloader = require("./torrent")
 const exists = s => new Promise(r => fs.access(s, fs.constants.F_OK, e => r(!e)))
+const escapeNewLine = (platform, arg) => platform === 'win32' ? arg.replaceAll(/\n/g, "\\n").replaceAll(/\r/g, "\\r") : arg
+const escapeDoubleQuotes = (platform, arg) => platform === 'win32' ? arg.replaceAll(/"/g, '`"') : arg.replaceAll(/"/g, '\\"')
 const stripAnsi = (str) => {
   const pattern = [
     '[\\u001B\\u009B][[\\]()#;?]*(?:(?:(?:(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]+)*|[a-zA-Z\\d]+(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]*)*)?\\u0007)',
