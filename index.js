@@ -32,6 +32,7 @@ const stripAnsi = (str) => {
   const regex = new RegExp(pattern, 'g')
   return str.replace(regex, '');
 }
+
 const winEscape = (str) => {
   return str
     .replaceAll(/\\n/g, "\n")
@@ -40,8 +41,14 @@ const winEscape = (str) => {
     .replaceAll(/\\b/g, "\b")
     .replaceAll(/\\f/g, "\f")
     .replaceAll(/\\/g, "")
+}
+
+const escapeRCE = (str) => {
+  return str
     .replaceAll(/\`/g, "\\`")
     .replaceAll(/\$/g, "\\$")
+    .replaceAll(/\{/g, "(")
+    .replaceAll(/\}/g, ")")
 }
 
 class Dalai {
@@ -248,7 +255,7 @@ class Dalai {
     for (let key in o) {
       chunks.push(`--${key} ${escapeDoubleQuotes(platform, o[key].toString())}`)
     }
-    const escaped = escapeNewLine(platform, req.prompt)
+    const escaped = escapeRCE(escapeNewLine(platform, req.prompt))
     const prompt = `"${escapeDoubleQuotes(platform, escaped)}"`
 
     chunks.push(`-p ${prompt}`)
