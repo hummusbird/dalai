@@ -65,8 +65,8 @@ const start = (port, home) => {
         });
     });
     
-    // setting localhost here breaks docker, for some fucking reason
-    httpServer.listen(port, "localhost", () => {
+    // setting localhost here breaks everything except the web prompt, for some fucking reason
+    httpServer.listen(port, () => {
         console.log(`Server running on http://localhost:${port}/`)
     })
 }
