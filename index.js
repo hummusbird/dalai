@@ -23,6 +23,7 @@ const TorrentDownloader = require("./torrent")
 const exists = s => new Promise(r => fs.access(s, fs.constants.F_OK, e => r(!e)))
 const escapeNewLine = (platform, arg) => platform === 'win32' ? arg.replaceAll(/\n/g, "\\n").replaceAll(/\r/g, "\\r") : arg
 const escapeDoubleQuotes = (platform, arg) => platform === 'win32' ? arg.replaceAll(/"/g, '`"') : arg.replaceAll(/"/g, '\\"')
+const replaceSingleQuotes = (platform, arg) => platform === 'win32' ? arg.replaceAll(/'/g, '"') : arg.replaceAll(/'/g, '"')
 const stripAnsi = (str) => {
   const pattern = [
     '[\\u001B\\u009B][[\\]()#;?]*(?:(?:(?:(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]+)*|[a-zA-Z\\d]+(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]*)*)?\\u0007)',
@@ -41,14 +42,6 @@ const winEscape = (str) => {
     .replaceAll(/\\b/g, "\b")
     .replaceAll(/\\f/g, "\f")
     .replaceAll(/\\/g, "")
-}
-
-const escapeRCE = (str) => {
-  return str
-    .replaceAll(/\`/g, "\\`")
-    .replaceAll(/\$/g, "\\$")
-    .replaceAll(/\{/g, "(")
-    .replaceAll(/\}/g, ")")
 }
 
 class Dalai {
@@ -255,10 +248,8 @@ class Dalai {
     for (let key in o) {
       chunks.push(`--${key} ${escapeDoubleQuotes(platform, o[key].toString())}`)
     }
-    const escaped = escapeRCE(escapeNewLine(platform, req.prompt))
-    const prompt = `"${escapeDoubleQuotes(platform, escaped)}"`
 
-    chunks.push(`-p ${prompt}`)
+    chunks.push(`-p '${replaceSingleQuotes(platform, req.prompt)}'`)
 
     const main_bin_path = platform === "win32" ? path.resolve(this.home, Core, "build", "Release", "main") : path.resolve(this.home, Core, "main")
     this.sessionBuffer = "";
